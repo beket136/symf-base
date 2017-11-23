@@ -1,50 +1,19 @@
 version: '3'
 services:
     web:
-        image: nginx
+        image: nginx:latest
         volumes:
-            - "./etc/nginx/symf-base.conf:/etc/nginx/conf.d/default.template.conf"
+            - "./etc/nginx/default.template.conf:/etc/nginx/conf.d/default.template.conf"
             - "./etc/nginx/symf-base-dev.conf:/etc/nginx/conf.d/symf.base.dev.conf"
-            - "./etc/ssl:/etc/ssl"
             - "./web/app:/var/www/html"
         ports:
             - "80:80"
             - "443:443"
-        env_file:
-                    - ".env"
         restart: always
-        depends_on:
-            - php
-            - mysqldb
-    php:
-        image: nanoninja/php-fpm
-        restart: always
-        volumes:
-            - "./web/app:/var/www/html"
         links:
-           - mysqldb
-    composer:
-        image: "composer"
-        volumes:
-            - "./web/app/symf-base:/app"
-        command: install
-
-    myadmin:
-        image: phpmyadmin/phpmyadmin
-        container_name: phpmyadmin
-        ports:
-            - "8000:80"
-        environment:
-            - PMA_ARBITRARY=1
-            - PMA_HOST=${MYSQL_HOST}
-        restart: always
-        depends_on:
-            - mysqldb
-        env_file:
-                    - ".env"
-    mysqldb:
+            - dbsymf
+    dbsymf:
         image: mysql
-        container_name: ${MYSQL_HOST}
         restart: always
         env_file:
             - ".env"
@@ -57,3 +26,38 @@ services:
             - "3306:3306"
         volumes:
             - "./data/db/mysql:/var/lib/mysql"
+    php:
+        image: nanoninja/php-fpm
+        restart: always
+        volumes:
+            - "./web/app:/var/www/html"
+#    php:
+#        image: php:7-fpm
+#        volumes:
+#            - "./web/app:/var/www/html"
+#        links:
+#            - dbsymf
+#        depends_on:
+#            - dbsymf
+    composer:
+        image: "composer"
+        volumes:
+            - "./web/app/symf-base:/app"
+        command: install
+        links:
+            - php
+            - dbsymf
+    myadmin:
+        image: phpmyadmin/phpmyadmin
+        ports:
+            - "8000:80"
+        environment:
+            - PMA_ARBITRARY=1
+            - PMA_HOST=${PMA_HOST}
+        restart: always
+        env_file:
+            - ".env"
+        depends_on:
+            - dbsymf
+        links:
+            - dbsymf

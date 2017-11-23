@@ -11,6 +11,30 @@ web_profiler:
     toolbar: true
     intercept_redirects: false
 
+doctrine:
+    dbal:
+        connections:
+            default:
+                server_version: '5.7'
+                driver: pdo_mysql
+                host: dbsymf
+                port: '%database_port%'
+                dbname: '%database_name%'
+                user: '%database_user%'
+                password: '%database_password%'
+            test:
+                server_version: '5.7'
+                driver: pdo_mysql
+                host: dbsymf
+                port: '%database_port%'
+                dbname: '%database_name%'
+                user: '%database_user%'
+                password: '%database_password%'
+
+    orm:
+        auto_generate_proxy_classes: '%kernel.debug%'
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        auto_mapping: true
 monolog:
     handlers:
         main:
@@ -41,15 +65,15 @@ monolog:
 #    delivery_addresses: ['me@example.com']
 
 #Nelmio CORS Configuration
-nelmio_cors:
-    defaults:
-        allow_credentials: false
-        allow_origin: ['*']
-        allow_headers: ['*']
-        allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-        max_age: 3600
-        hosts: []
-        origin_regex: false
+#nelmio_cors:
+#    defaults:
+#        allow_credentials: false
+#        allow_origin: ['*']
+#        allow_headers: ['*']
+#        allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+#        max_age: 3600
+#        hosts: []
+#        origin_regex: false
 
 ##FOSRest Configuration
 #fos_rest:

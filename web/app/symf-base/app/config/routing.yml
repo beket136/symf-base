@@ -1,3 +1,12 @@
+beketov_uz:
+    resource: "@BeketovUZBundle/Resources/config/routing.yml"
+    prefix:   /uz-api
+
+#uz:
+#    resource: "@UZBundle/Controller/APIController/"
+#    type:     annotation
+#    prefix:   /uz-api
+
 app:
     resource: '@AppBundle/Controller/'
     type: annotation

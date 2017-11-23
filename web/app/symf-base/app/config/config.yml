@@ -41,13 +41,13 @@ twig:
 # Doctrine Configuration
 doctrine:
     dbal:
+        server_version: '5.7'
         driver: pdo_mysql
         host: '%database_host%'
         port: '%database_port%'
         dbname: '%database_name%'
         user: '%database_user%'
         password: '%database_password%'
-        charset: UTF8
         # if using pdo_sqlite as your database driver:
         #   1. add the path in parameters.yml
         #     e.g. database_path: '%kernel.project_dir%/var/data/data.sqlite'
@@ -68,7 +68,7 @@ swiftmailer:
     password: '%mailer_password%'
     spool: { type: memory }
 
-## Nelmio CORS Configuration
+# Nelmio CORS Configuration
 nelmio_cors:
     defaults:
         allow_credentials: false
@@ -79,9 +79,10 @@ nelmio_cors:
         hosts: []
         origin_regex: false
 
-#FOSRest Configuration
+# FOSRest Configuration
 fos_rest:
     body_listener: true
+    versioning: true
     format_listener:
         rules:
             - { path: '^/', priorities: ['json'], fallback_format: json, prefer_extension: false }
