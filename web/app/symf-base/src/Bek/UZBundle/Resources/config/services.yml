@@ -1,0 +1,6 @@
+services:
+    bek_uz.uzservice:
+        class: Bek\UZBundle\Services\UZService
+        arguments:
+            $baseUrl: '%uz_base_url%'
+            $lang: '%uz_lang%'

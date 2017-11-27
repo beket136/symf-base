@@ -13,24 +13,57 @@ use GuzzleHttp\Client;
 
 class UZService
 {
-    private $apiMainPoint = 'https://booking.uz.gov.ua/en/purchase/station';
+    const PARAMSKEYS = [
+        'station_id_from' => '',
+        'station_id_till' => '',
+        'station_from' => '',
+        'station_till' => '',
+        'date_dep' => '',
+        'time_dep' => '',
+    ];
 
-    function __construct($baseUrl)
+    /**
+     * UZService constructor.
+     * @param $baseUrl
+     */
+    function __construct(string $baseUrl, string $lang)
     {
-        $this->client = new \GuzzleHttp\Client(['base_uri' => $baseUrl]);
+        echo $baseUrl . $lang;
+        $this->client = new \GuzzleHttp\Client(['base_uri' => $baseUrl . $lang]);
     }
 
+    /**
+     * @param string $term
+     * @return \Psr\Http\Message\StreamInterface
+     */
     function getStationsByTerm(string $term)
     {
-
-        $res = $this->client->request('GET', '/en/purchase/station/?term=' . $term);
-
+        $res = $this->client->request('GET', '/purchase/station/?term=' . $term);
         return $res->getBody();
     }
 
-    function matchTerm($term, $terms)
+    private function validateParams(array $params): bool
     {
-
+//        if (count(array_diff_key(self::PARAMSKEYS, $params)) > 0) {
+//            return false;
+//        }
+        return true;
     }
 
+    function getTrainsInfo($params)
+    {
+
+        if (!$this->validateParams($params)) {
+            return false;
+        }
+
+        $requestParams['form_params'] = $params;
+        $res = $this->client->post('/purchase/search/', $requestParams);
+        return $res->getBody();
+    }
+
+    function matchTerm(string $term)
+    {
+        $stationsList = $this->getStationsByTerm($term);
+    }
 }

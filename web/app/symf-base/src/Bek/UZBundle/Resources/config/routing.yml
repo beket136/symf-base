@@ -1,0 +1,3 @@
+bek_uz_homepage:
+    path:     /
+    defaults: { _controller: BekUZBundle:Default:index }
