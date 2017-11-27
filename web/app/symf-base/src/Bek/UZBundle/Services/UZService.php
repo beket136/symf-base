@@ -29,7 +29,7 @@ class UZService
     function __construct(string $baseUrl, string $lang)
     {
         echo $baseUrl . $lang;
-        $this->client = new \GuzzleHttp\Client(['base_uri' => $baseUrl . $lang]);
+        $this->client = new \GuzzleHttp\Client(['base_uri' => $baseUrl . $lang . '/']);
     }
 
     /**
@@ -38,7 +38,7 @@ class UZService
      */
     function getStationsByTerm(string $term)
     {
-        $res = $this->client->request('GET', '/purchase/station/?term=' . $term);
+        $res = $this->client->request('GET', 'purchase/station/?term=' . $term);
         return $res->getBody();
     }
 
@@ -58,7 +58,7 @@ class UZService
         }
 
         $requestParams['form_params'] = $params;
-        $res = $this->client->post('/purchase/search/', $requestParams);
+        $res = $this->client->post('purchase/search/', $requestParams);
         return $res->getBody();
     }
 

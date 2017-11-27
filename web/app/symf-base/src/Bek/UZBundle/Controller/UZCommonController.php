@@ -52,15 +52,13 @@ class UZCommonController extends Controller
      */
     public function getTrainsInfo(Request $req)
     {
-
+//http://symf-base.local.dev/uz-api/trains_info/?station_till=kyiv&station_from=kharkiv&station_id_from=2204001&station_id_till=2200001&date_dep=12.23.2017&time_dep=00:00
         $paramsString = $req->getQueryString();
         parse_str($paramsString, $params);
+
         // http://symf-base.local.dev/uz-api/trains_info/?stationTo=kyiv&stationFrom=kharkov&station_id_from=2200001&station_id_till=2204001&date_dep=15.23.2017
         $uzservice = $this->container->get('bek_uz.uzservice');
         $stations = $uzservice->getTrainsInfo($params);
-//        $stations = $uzservice->matchTerm($term);
-
-
         $response = new Response(
             $stations,
             Response::HTTP_OK,
@@ -72,14 +70,3 @@ class UZCommonController extends Controller
     }
 
 }
-
-//name="
-//station_id_from:2200001
-//station_id_till:2204001
-//station_from:Kyiv
-//station_till:Kharkiv
-//date_dep:11.23.2017
-//time_dep:00:00
-//time_dep_till:
-//another_ec:0
-//search:"
