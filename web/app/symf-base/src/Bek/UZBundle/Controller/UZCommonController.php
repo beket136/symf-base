@@ -52,7 +52,6 @@ class UZCommonController extends Controller
      */
     public function getTrainsInfo(Request $req)
     {
-//http://symf-base.local.dev/uz-api/trains_info/?station_till=kyiv&station_from=kharkiv&station_id_from=2204001&station_id_till=2200001&date_dep=12.23.2017&time_dep=00:00
         $paramsString = $req->getQueryString();
         parse_str($paramsString, $params);
 
