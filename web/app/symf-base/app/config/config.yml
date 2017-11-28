@@ -37,7 +37,8 @@ framework:
 twig:
     debug: '%kernel.debug%'
     strict_variables: '%kernel.debug%'
-
+    paths:
+        '%kernel.project_dir%/src/Bek/UZBundle/Resources/views': uz_bundle_views
 # Doctrine Configuration
 doctrine:
     dbal:
@@ -62,11 +63,13 @@ doctrine:
 
 # Swiftmailer Configuration
 swiftmailer:
-    transport: '%mailer_transport%'
-    host: '%mailer_host%'
-    username: '%mailer_user%'
-    password: '%mailer_password%'
-    spool: { type: memory }
+    transport: "%mailer_transport%"
+    host:      "%mailer_host%"
+    username:  "%mailer_user%"
+    password:  "%mailer_password%"
+    auth_mode: "%mailer_auth_mode%"
+    port:      "%mailer_port%"
+    spool:     { type: memory }
 
 # Nelmio CORS Configuration
 #nelmio_cors:

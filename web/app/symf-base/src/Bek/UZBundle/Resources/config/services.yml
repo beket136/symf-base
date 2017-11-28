@@ -4,3 +4,5 @@ services:
         arguments:
             $baseUrl: '%uz_base_url%'
             $lang: '%uz_lang%'
+    bek_uz.uzmailer:
+        class: Bek\UZBundle\Services\UZMailerService
