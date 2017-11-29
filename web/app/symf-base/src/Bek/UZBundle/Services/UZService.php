@@ -28,7 +28,6 @@ class UZService
      */
     function __construct(string $baseUrl, string $lang)
     {
-        echo $baseUrl . $lang;
         $this->client = new \GuzzleHttp\Client(['base_uri' => $baseUrl . $lang . '/']);
     }
 

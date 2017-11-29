@@ -18,6 +18,11 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
             ->setDescription('Command to check tickets exist');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @Return void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
@@ -29,6 +34,11 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
         $this->handleFoundTickets($usersEmails, $output);
     }
 
+    /**
+     * @param $usersEmails
+     * @param OutputInterface $output
+     * @Return void
+     */
     private function handleFoundTickets($usersEmails, OutputInterface $output)
     {
 
