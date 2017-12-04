@@ -94,11 +94,8 @@ class UZCommonController extends Controller
                 return new JsonResponse(['message' => 'Bad request'], 400);
             }
             $em->flush();
-
             return new JsonResponse(['message' => 'Updated successfully.'], 200);
-
         }
-
         return new JsonResponse(['message' => 'Resource not found.'], 404);
     }
 
@@ -113,8 +110,11 @@ class UZCommonController extends Controller
         $sRequests = $this->getDoctrine()
             ->getRepository('BekUZBundle:UZSearchRequest')
             ->findAllSRRequests();
+        if (!empty($sRequests)) {
+            return new JsonResponse(['data' => $sRequests]);
+        }
+        return new JsonResponse(['message' => 'there is no entities with provided id!', 'data' => []], 404);
 
-        return new JsonResponse(['data' => $sRequests]);
     }
 
     /**
@@ -127,8 +127,10 @@ class UZCommonController extends Controller
         $sRequest = $this->getDoctrine()
             ->getRepository('BekUZBundle:UZSearchRequest')
             ->findSRequest($id);
-
-        return new JsonResponse(['data' => $sRequest]);
+        if (!empty($sRequest)) {
+            return new JsonResponse(['data' => $sRequest]);
+        }
+        return new JsonResponse(['message' => 'there is no entities with provided id!', 'data' => []], 404);
 
     }
 
@@ -138,18 +140,18 @@ class UZCommonController extends Controller
      */
     public function deleteSRequest($id)
     {
-        $message = ['code' => 404, 'message' => 'Fail'];
+        $message = ['message' => 'Fail'];
         $em = $this->getDoctrine()->getManager();
         $sRequest = $this->getDoctrine()
             ->getRepository('BekUZBundle:UZSearchRequest')->find($id);
         if ($sRequest != null) {
             $em->remove($sRequest);
             $em->flush();
-            $message = ['message' => 'Deleted!'];
+            return new JsonResponse(['message' => 'Deleted!']);
         }
+        return new JsonResponse(['message' => 'Fail'], 404);
 
-        return new JsonResponse($message);
+
     }
-
 
 }

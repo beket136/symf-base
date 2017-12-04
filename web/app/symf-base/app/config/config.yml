@@ -81,7 +81,7 @@ swiftmailer:
 #        max_age: 3600
 #        hosts: []
 #        origin_regex: false
-#
+
 ## FOSRest Configuration
 #fos_rest:
 #    body_listener: true

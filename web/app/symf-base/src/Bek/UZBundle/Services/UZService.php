@@ -28,7 +28,7 @@ class UZService
      */
     function __construct(string $baseUrl, string $lang)
     {
-        $this->client = new \GuzzleHttp\Client(['base_uri' => $baseUrl . $lang . '/']);
+        $this->client = new Client(['base_uri' => $baseUrl . $lang . '/']);
     }
 
     /**
@@ -38,61 +38,60 @@ class UZService
     function getStationsByTerm(string $term)
     {
 
-//        $client = new \GuzzleHttp\Client();
-//        $resp = $client->get('https://booking.uz.gov.ua/en/purchase/station/?term=Kyiv');
-
-//        var_dump($resp->getBody()->read(1024));
-
         $res = $this->client->get( 'purchase/station/?term=' . $term);
+        return $res->getBody()->read(2048);
 
-        return $res->getBody()->read(1024);
-    }
-
-    private function validateParams(array $params): bool
-    {
-//        if (count(array_diff_key(self::PARAMSKEYS, $params)) > 0) {
-//            return false;
-//        }
-
-        return true;
     }
 
     /**
      * @param $params
-     * @return bool|\Psr\Http\Message\StreamInterface
+     * @return string
      */
     function getTrainsInfo($params)
     {
 
-//        if (!$this->validateParams($params)) {
-//            return false;
-//        }
-
         $requestParams['form_params'] = $params;
         $resp = $this->client->post('purchase/search/', $requestParams);
-        return $resp->getBody()->read(1024);
+        return $resp->getBody()->read(2048);
     }
 
     public function buildSearchParams(array $params): array
     {
-        $params = self::PARAMSKEYS;
-        $params = [
+        $validParams = [
             'station_id_from' => $params['stationIdFrom'],
             'station_id_till' => $params['stationIdTill'],
-            'station_from' => '',
-            'station_till' => '',
-            'date_dep' => '',
-            'time_dep' => '',
+            'station_from' => $params['stationFrom'],
+            'station_till' => $params['stationTill'],
+            'date_dep' => $params['dateDep']->format('m.d.Y'),
+            'time_dep' => $params['timeDep']->format('H:i'),
         ];
-//TODO FINISH method implementeation
-        return $params;
+        return $validParams;
     }
 
-    /**
-     * @param string $term
-     */
-    function matchTerm(string $term)
+
+    public function parseTrainsInfoResponse(string $uzResponse)
     {
-        $stationsList = $this->getStationsByTerm($term);
+
+        $uzResponse = \GuzzleHttp\json_decode($uzResponse, true);
+
+        $foundTicket=[];
+
+        for ($i = 0; $i < count($uzResponse['value']); $i++) {
+
+            $foundTicket['from'] = $uzResponse['value'][$i]['from'];
+            $foundTicket['till'] = $uzResponse['value'][$i]['till'];
+            $foundTicket['trainNum'] = $uzResponse['value'][$i]['num'];
+            $foundTicket['travelTime'] = $uzResponse['value'][$i]['travel_time'];
+            if (!empty($uzResponse['value'][$i]['types'])) {
+                foreach ($uzResponse['value'][$i]['types'] as $type) {
+
+                    $foundTicket[$type['title']] = $type['places'];
+
+                }
+            }
+        }
+
+        return !empty($foundTicket) ? $foundTicket : false;
     }
+
 }

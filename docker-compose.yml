@@ -29,7 +29,10 @@ services:
     php:
         image: nanoninja/php-fpm
         restart: always
+#        ports:
+#            - "9000:9000"
         volumes:
+            - "./etc/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
             - "./web/app:/var/www/html"
 #    php:
 #        image: php:7-fpm
@@ -47,17 +50,17 @@ services:
         links:
             - php
             - dbsymf
-    myadmin:
-        image: phpmyadmin/phpmyadmin
-        ports:
-            - "8000:80"
-        environment:
-            - PMA_ARBITRARY=1
-            - PMA_HOST=${PMA_HOST}
-        restart: always
-        env_file:
-            - ".env"
-        depends_on:
-            - dbsymf
-        links:
-            - dbsymf
+#    myadmin:
+#        image: phpmyadmin/phpmyadmin
+#        ports:
+#            - "8000:80"
+#        environment:
+#            - PMA_ARBITRARY=1
+#            - PMA_HOST=${PMA_HOST}
+#        restart: always
+#        env_file:
+#            - ".env"
+#        depends_on:
+#            - dbsymf
+#        links:
+#            - dbsymf

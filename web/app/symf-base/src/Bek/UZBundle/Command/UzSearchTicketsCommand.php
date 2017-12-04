@@ -28,7 +28,6 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
 
 
 
-
         $usersEmails = [
             'beket136@gmail.com',
             'asd@mail.com'
@@ -48,34 +47,23 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
     {
         $uzservice = $this->getContainer()->get('bek_uz.uzservice');
 
-        /////
-//        $response = $uzservice->getTrainsInfo(
-//            [
-//                'station_id_from' => '2200001',
-//                'station_id_till' => '2204001',
-//                'station_from' => 'Kyiv',
-//                'station_till' => 'Kharkiv',
-//                'date_dep' => '12.09.2017',
-//                'time_dep' => '00:00:00',
-//            ]
-//        );
-
-        ////////
-        $usersEmails = [];
+        $foundTickets = [];
 
         foreach ($actualRequests as $params){
+            $requestParams = $uzservice->buildSearchParams($params);
+            try {
+                $foundTickets[$params['email']][$params['id']] = $uzservice->parseTrainsInfoResponse($uzservice->getTrainsInfo($requestParams));
+                $foundTickets[$params['email']]['email'] = $params['email'];
+                $foundTickets[$params['email']][$params['id']]['stationFrom'] = $params['stationFrom'];
+                $foundTickets[$params['email']][$params['id']]['stationTill'] = $params['stationTill'];
+                $foundTickets[$params['email']][$params['id']]['dateDep'] = $params['dateDep']->format('m.d.Y');
+                $foundTickets[$params['email']][$params['id']]['timeDep'] = $params['timeDep']->format('H:i');
 
-            $params = $uzservice->buildSearchParams($params);
-            $response = $uzservice->getTrainsInfo($params);
-            var_dump($response);die;
-
-            if( false ){ //TODO parse response and add condition
-                $usersEmails[] = $actualRequests['email'];
+            }catch (\Exception $exception){
+                echo $exception->getMessage();
             }
-            //TODO  if found add email and maybe information about existing tickets (trains , ticket types , qty) to
-
         }
-        return $usersEmails;
+        return $foundTickets;
     }
 
     /**
@@ -83,7 +71,7 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
      * @param OutputInterface $output
      * @Return void
      */
-    private function handleFoundTickets($usersEmails, OutputInterface $output)
+    private function handleFoundTickets($foundUsersTequests, OutputInterface $output)
     {
 
         $twig = $this->getContainer()->get('templating');
@@ -95,15 +83,51 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
         $uzUrl = $this->getContainer()->hasParameter('uz_base_url') ?
             $this->getContainer()->getParameter('uz_base_url') : '';
 
-        foreach ($usersEmails as $email) {
+        foreach ($foundUsersTequests as $foundTrips) {
 
             $twigVars = [
                 'uz_url' => $uzUrl,
-                'email' => $email
+                'email' => $foundTrips['email'],
+                'foundTrips' => [],
             ];
+            unset($foundTrips['email']);
+
+            $i = 0;
+            foreach ($foundTrips as $trip) {
+                $twigVars['foundTrips'][$i] = [
+                    'stationFrom' => $trip['stationFrom'],
+                    'stationTill' => $trip['stationTill'],
+                    'dateDep' => $trip['dateDep'],
+                    'timeDep' => $trip['timeDep'],
+                    'from' => $trip['from'],
+                    'till' => $trip['till'],
+                    'trainNum' => $trip['trainNum'],
+                    'travelTime' => $trip['travelTime'],
+                ];
+
+                if (!empty($trip['De Luxe / 1-cl. sleeper'])) {
+                    $twigVars['foundTrips'][$i]['deLuxe'] = $trip['De Luxe / 1-cl. sleeper'];
+                }
+
+                if (!empty($trip['Compartment / 2-cl. sleeper'])) {
+                    $twigVars['foundTrips'][$i]['compartment'] = $trip['Compartment / 2-cl. sleeper'];
+                }
+
+                if (!empty($trip['Seating first class'])) {
+                    $twigVars['foundTrips'][$i]['seatingFirstClass'] = $trip['Seating first class'];
+                }
+
+                if (!empty($trip['Seating second class'])) {
+                    $twigVars['foundTrips'][$i]['seatingSecondClass'] = $trip['Seating second class'];
+                }
+//var_dump($twigVars['foundTrips']);die;
+                $i++;
+            }
+
+
 
             $swiftMessage = new \Swift_Message();
-            $swiftMessage->setTo($email);
+            $swiftMessage->setTo($twigVars['email']);
             $swiftMessage->setFrom($adminEmail);
             $swiftMessage->setBody(
                 $twig->render('@uz_bundle_views/Emails/ticket-found.html.twig', $twigVars),
@@ -111,7 +135,7 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
             );
 
             if ($uzMailer->send($swiftMessage)) {
-                $output->writeln('Email to ' . $email . 'sent.');
+                $output->writeln('Email to ' . $twigVars['email'] . 'sent.');
             }
         }
     }
