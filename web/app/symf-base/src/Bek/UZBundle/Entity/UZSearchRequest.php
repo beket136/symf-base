@@ -284,6 +284,7 @@ class UZSearchRequest
 
     public function setParams(array $params)
     {
+
         if (!$this->validateParams($params)) {
             return false;
         }
@@ -293,31 +294,30 @@ class UZSearchRequest
         $this->stationIdTill = $params['station_id_till'];
         $this->stationIdFrom = $params['station_id_from'];
         $this->email = $params['email'];
-        $this->dateDep = new DateTime($params['time_dep']);
-        $this->timeDep = !empty($params['time_dep']) ? new DateTime($params['time_dep']) : new DateTime('00:00:00');
+        $this->dateDep = new \DateTime($params['date_dep']);
+        $this->timeDep = !empty($params['time_dep']) ? new \DateTime($params['time_dep']) : new \DateTime('00:00:00');
         $this->userId = !empty($params['userId']) ? $params['userId'] : null;
 
         return $this;
     }
 
     /**
-     * @param Request $request
+     * @param array $params
      * @return bool
      */
     private function validateParams(array $params): bool
     {
         if (
-            !empty($params['station_from']) || gettype($params['station_from']) !== 'string' ||
-            !empty($params['station_id_from']) && gettype($params['station_id_from']) !== 'integer' ||
-            !empty($params['station_till']) || gettype($params['station_till']) !== 'string' ||
-            !empty($params['station_id_till']) || gettype($params['station_id_till']) !== 'integer' ||
-            !empty($params['user_id']) || gettype($params['user_id']) !== 'integer' ||
-            !empty($params['email']) || gettype($params['email']) !== 'string' ||
-            !empty($params['date_dep']) || gettype($params['date_dep']) !== 'DateTime'
+            empty($params['station_from'])    || !strval($params['station_from'])    ||
+            empty($params['station_id_from']) || !intval($params['station_id_from']) ||
+            empty($params['station_till'])    || !strval($params['station_till'])    ||
+            empty($params['station_id_till']) || !intval($params['station_id_till']) ||
+            empty($params['user_id'])         || !intval($params['user_id'])         ||
+            empty($params['email'])           || !strval($params['email'])           ||
+            empty($params['date_dep'])        || !strval($params['date_dep'])
         ) {
             return false;
         }
-
         return true;
     }
 

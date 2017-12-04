@@ -26,12 +26,56 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
+
+
+
         $usersEmails = [
             'beket136@gmail.com',
             'asd@mail.com'
         ];
 
+        $actualRequests = $this->getContainer()->get('doctrine')
+            ->getRepository('BekUZBundle:UZSearchRequest')
+            ->getActualSRequests();
+
+        $usersEmails = $this->searchForTickets($actualRequests);
+
         $this->handleFoundTickets($usersEmails, $output);
+        return 'ok';
+    }
+
+    private function searchForTickets(array $actualRequests): array
+    {
+        $uzservice = $this->getContainer()->get('bek_uz.uzservice');
+
+        /////
+//        $response = $uzservice->getTrainsInfo(
+//            [
+//                'station_id_from' => '2200001',
+//                'station_id_till' => '2204001',
+//                'station_from' => 'Kyiv',
+//                'station_till' => 'Kharkiv',
+//                'date_dep' => '12.09.2017',
+//                'time_dep' => '00:00:00',
+//            ]
+//        );
+
+        ////////
+        $usersEmails = [];
+
+        foreach ($actualRequests as $params){
+
+            $params = $uzservice->buildSearchParams($params);
+            $response = $uzservice->getTrainsInfo($params);
+            var_dump($response);die;
+
+            if( false ){ //TODO parse response and add condition
+                $usersEmails[] = $actualRequests['email'];
+            }
+            //TODO  if found add email and maybe information about existing tickets (trains , ticket types , qty) to
+
+        }
+        return $usersEmails;
     }
 
     /**
@@ -51,7 +95,6 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
         $uzUrl = $this->getContainer()->hasParameter('uz_base_url') ?
             $this->getContainer()->getParameter('uz_base_url') : '';
 
-
         foreach ($usersEmails as $email) {
 
             $twigVars = [
@@ -66,6 +109,7 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
                 $twig->render('@uz_bundle_views/Emails/ticket-found.html.twig', $twigVars),
                 'text/html'
             );
+
             if ($uzMailer->send($swiftMessage)) {
                 $output->writeln('Email to ' . $email . 'sent.');
             }

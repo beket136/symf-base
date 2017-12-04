@@ -13,7 +13,10 @@ use Doctrine\ORM\AbstractQuery;
 class UZSearchRequestRepository extends \Doctrine\ORM\EntityRepository
 {
 
-    public function findAllSRRequests()
+    /**
+     * @return array
+     */
+    public function findAllSRRequests(): array
     {
         return $this->getEntityManager()
             ->createQuery(
@@ -22,8 +25,11 @@ class UZSearchRequestRepository extends \Doctrine\ORM\EntityRepository
             ->getResult(AbstractQuery::HYDRATE_ARRAY);
     }
 
-
-    public function findSRequest($id)
+    /**
+     * @param int $id
+     * @return array
+     */
+    public function findSRequest(integer $id): array
     {
         $query = $this
             ->createQueryBuilder('uz')
@@ -32,5 +38,17 @@ class UZSearchRequestRepository extends \Doctrine\ORM\EntityRepository
             ->getQuery();
 
         return $query->getResult(AbstractQuery::HYDRATE_ARRAY);
+    }
+
+    public function getActualSRequests()
+    {
+
+        $query = $this
+            ->createQueryBuilder('uz')
+            ->where('uz.dateDep >= CURRENT_DATE()')
+            ->getQuery();
+
+        return $query->getResult(AbstractQuery::HYDRATE_ARRAY);
+
     }
 }

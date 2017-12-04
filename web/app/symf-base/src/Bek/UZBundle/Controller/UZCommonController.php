@@ -4,13 +4,12 @@ namespace Bek\UZBundle\Controller;
 
 use Bek\UZBundle\Entity\UZSearchRequest;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use function MongoDB\BSON\toJSON;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
+
 
 /**
  *
@@ -23,29 +22,29 @@ class UZCommonController extends Controller
      * @Route("/stations/{term}")
      * @Method("GET")
      */
-    public function getStationsByTerm(Request $req, $term = ''): JsonResponse
+    public function getStationsByTerm(string $term): JsonResponse
     {
         $uzservice = $this->container->get('bek_uz.uzservice');
         $data = $uzservice->getStationsByTerm($term);
-        $message = ['code' => 200, 'data' => $data];
-        return JsonResponse($message);
+        return new JsonResponse(['data' => $data]);
     }
 
     /**
      * @Route("/trains_info/")
      * @Method("GET")
-     * // http://symf-base.local.dev/uz-api/trains_info/?stationTo=kyiv&stationFrom=kharkiv&station_id_from=2204001&station_id_till=2200001&date_dep=01.02.2018
+     * // http://symf-base.local.dev/uz-api/trains_info/?station_to=kyiv&station_from=kharkiv&station_id_from=2204001&station_id_till=2200001&date_dep=01.02.2018
      */
     public function getTrainsInfo(Request $req): JsonResponse
     {
+
         $paramsString = $req->getQueryString();
         parse_str($paramsString, $params);
         $uzservice = $this->container->get('bek_uz.uzservice');
         $data = $uzservice->getTrainsInfo($params);
 
-        $message = ['code' => 200, 'data' => $data];
-        return JsonResponse($message);
+//        var_dump($params);
 
+        return new JsonResponse(['data' => $data]);
     }
 
     /**
@@ -54,39 +53,40 @@ class UZCommonController extends Controller
      */
     public function addSearchRequest(Request $request): JsonResponse
     {
-        $message = ['code' => 404, 'message' => 'Fail'];
         $em = $this->getDoctrine()->getManager();
-
         $data = $request->request->all();
-//        var_dump($data);
-
         $sRequest = new UZSearchRequest();
-        $sRequest->setUserId(2);
-        $sRequest->setEmail('tes2t44@est.com');
-        $sRequest->setStationFrom('Kharkiv');
-        $sRequest->setStationTill('Kyiv');
-        $sRequest->setStationIdFrom(2200001);
-        $sRequest->setStationIdTill(2204001);
-        $sRequest->setTimeDep(new \DateTime('00:00:00'));
-        $sRequest->setDateDep(new \DateTime('2018-02-01', new \DateTimeZone('UTC')));
+        if (!$sRequest->setParams($data)) {
 
+            return new JsonResponse(['message' => 'Bad request'], 400);
+        }
         $em->persist($sRequest);
         $em->flush();
         if ($sRequest->getId()) {
-            $message = ['message' => 'created successfuly', 'data' => ['id' => $sRequest->getId()]];
-            $httpCode = 201;
+            $message = ['message' => 'created successfully', 'data' => ['id' => $sRequest->getId()]];
 
+            return new JsonResponse($message, 201);
         }
-        return new JsonResponse($message, $httpCode);
+
+        return new JsonResponse(['message' => 'Bad request'], 400);
     }
 
     /**
      * @Route("/search_request/{id}")
-     * @Method("PATCH")
+     * @Method("PUT")
      */
     public function updateSearchRequest(Request $request, $id)
     {
-        $params = $request->request->all();
+        $params = [];
+        $params['station_from'] = $request->get('station_from');
+        $params['station_id_from'] = $request->get('station_id_from');
+        $params['station_till'] = $request->get('station_till');
+        $params['station_id_till'] = $request->get('station_id_till');
+        $params['user_id'] = $request->get('user_id');
+        $params['email'] = $request->get('email');
+        $params['date_dep'] = $request->get('date_dep');
+        $params['time_dep'] = $request->get('time_dep');
+
         $em = $this->getDoctrine()->getManager();
         if ($sRequest = $em->getRepository('BekUZBundle:UZSearchRequest')->find($id)) {
 
@@ -94,9 +94,11 @@ class UZCommonController extends Controller
                 return new JsonResponse(['message' => 'Bad request'], 400);
             }
             $em->flush();
+
             return new JsonResponse(['message' => 'Updated successfully.'], 200);
 
         }
+
         return new JsonResponse(['message' => 'Resource not found.'], 404);
     }
 
@@ -111,14 +113,8 @@ class UZCommonController extends Controller
         $sRequests = $this->getDoctrine()
             ->getRepository('BekUZBundle:UZSearchRequest')
             ->findAllSRRequests();
-        return new JsonResponse($sRequests);
-        if ($sRequest != null) {
 
-
-            $em->flush();
-            $message = ['code' => 200, 'message' => 'Deleted!'];
-        }
-        return new JsonResponse($message);
+        return new JsonResponse(['data' => $sRequests]);
     }
 
     /**
@@ -132,7 +128,7 @@ class UZCommonController extends Controller
             ->getRepository('BekUZBundle:UZSearchRequest')
             ->findSRequest($id);
 
-        return new JsonResponse($sRequest);
+        return new JsonResponse(['data' => $sRequest]);
 
     }
 
@@ -149,11 +145,11 @@ class UZCommonController extends Controller
         if ($sRequest != null) {
             $em->remove($sRequest);
             $em->flush();
-            $message = ['code' => 200, 'message' => 'Deleted!'];
+            $message = ['message' => 'Deleted!'];
         }
+
         return new JsonResponse($message);
     }
-
 
 
 }
