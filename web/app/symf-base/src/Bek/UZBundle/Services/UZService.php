@@ -52,7 +52,7 @@ class UZService
 
         $requestParams['form_params'] = $params;
         $resp = $this->client->post('purchase/search/', $requestParams);
-        return $resp->getBody()->read(2048);
+        return $resp->getBody()->read(12048);
     }
 
     public function buildSearchParams(array $params): array
@@ -72,25 +72,24 @@ class UZService
     public function parseTrainsInfoResponse(string $uzResponse)
     {
 
-        $uzResponse = \GuzzleHttp\json_decode($uzResponse, true);
 
+        $uzResponse = \GuzzleHttp\json_decode($uzResponse, true);
         $foundTicket=[];
 
         for ($i = 0; $i < count($uzResponse['value']); $i++) {
 
-            $foundTicket['from'] = $uzResponse['value'][$i]['from'];
-            $foundTicket['till'] = $uzResponse['value'][$i]['till'];
-            $foundTicket['trainNum'] = $uzResponse['value'][$i]['num'];
-            $foundTicket['travelTime'] = $uzResponse['value'][$i]['travel_time'];
+            $foundTicket[$i]['from'] = $uzResponse['value'][$i]['from'];
+            $foundTicket[$i]['till'] = $uzResponse['value'][$i]['till'];
+            $foundTicket[$i]['trainNum'] = $uzResponse['value'][$i]['num'];
+            $foundTicket[$i]['travelTime'] = $uzResponse['value'][$i]['travel_time'];
             if (!empty($uzResponse['value'][$i]['types'])) {
                 foreach ($uzResponse['value'][$i]['types'] as $type) {
 
-                    $foundTicket[$type['title']] = $type['places'];
+                    $foundTicket[$i][$type['title']] = $type['places'];
 
                 }
             }
         }
-
         return !empty($foundTicket) ? $foundTicket : false;
     }
 
