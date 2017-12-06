@@ -13,14 +13,6 @@ use GuzzleHttp\Client;
 
 class UZService
 {
-    const PARAMSKEYS = [
-        'station_id_from' => '',
-        'station_id_till' => '',
-        'station_from' => '',
-        'station_till' => '',
-        'date_dep' => '',
-        'time_dep' => '',
-    ];
 
     /**
      * UZService constructor.
@@ -33,28 +25,29 @@ class UZService
 
     /**
      * @param string $term
-     * @return \Psr\Http\Message\StreamInterface
+     * @return array
      */
-    function getStationsByTerm(string $term)
+    function getStationsByTerm(string $term): array
     {
-
-        $res = $this->client->get( 'purchase/station/?term=' . $term);
-        return $res->getBody()->read(2048);
-
+        $res = $this->client->get('purchase/station/?term=' . $term);
+        return \GuzzleHttp\json_decode($res->getBody()->getContents(), true);
     }
 
     /**
      * @param $params
-     * @return string
+     * @return array
      */
-    function getTrainsInfo($params)
+    function getTrainsInfo($params): array
     {
-
         $requestParams['form_params'] = $params;
         $resp = $this->client->post('purchase/search/', $requestParams);
-        return $resp->getBody()->read(12048);
+        return \GuzzleHttp\json_decode($resp->getBody()->getContents(), true);
     }
 
+    /**
+     * @param array $params
+     * @return array
+     */
     public function buildSearchParams(array $params): array
     {
         $validParams = [
@@ -69,12 +62,13 @@ class UZService
     }
 
 
-    public function parseTrainsInfoResponse(string $uzResponse)
+    /**
+     * @param array $uzResponse
+     * @return array|bool
+     */
+    public function parseTrainsInfoResponse(array $uzResponse)
     {
-
-
-        $uzResponse = \GuzzleHttp\json_decode($uzResponse, true);
-        $foundTicket=[];
+        $foundTicket = [];
 
         for ($i = 0; $i < count($uzResponse['value']); $i++) {
 

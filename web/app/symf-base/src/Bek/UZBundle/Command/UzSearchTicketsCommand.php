@@ -24,7 +24,7 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @Return void
+     * @return void
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -34,21 +34,20 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
             ->getActualSRequests();
 
         $foundTickets = $this->searchForTickets($actualRequests);
-
-
         $this->handleFoundTickets($foundTickets, $output);
-        return 'ok';
     }
 
+    /**
+     * @param array $actualRequests
+     * @return array
+     */
     private function searchForTickets(array $actualRequests): array
     {
         $uzservice = $this->getContainer()->get('bek_uz.uzservice');
-
         $foundTickets = [];
 
         foreach ($actualRequests as $params){
             $requestParams = $uzservice->buildSearchParams($params);
-
             try {
                 $foundTickets[$params['email']]['email'] = $params['email'];
                 $foundTickets[$params['email']][$params['id']]['trains'] = $uzservice->parseTrainsInfoResponse($uzservice->getTrainsInfo($requestParams));
@@ -65,9 +64,9 @@ class UzSearchTicketsCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param $usersEmails
+     * @param $foundUsersTequests
      * @param OutputInterface $output
-     * @Return void
+     * @return void
      */
     private function handleFoundTickets($foundUsersTequests, OutputInterface $output)
     {

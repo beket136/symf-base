@@ -3,8 +3,6 @@
 namespace Bek\UZBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use GuzzleHttp\Psr7\Request;
-use Symfony\Component\Validator\Constraints\DateTime;
 
 /**
  * UZSearchRequest
@@ -322,4 +320,3 @@ class UZSearchRequest
     }
 
 }
-

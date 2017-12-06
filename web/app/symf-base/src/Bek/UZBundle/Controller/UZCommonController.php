@@ -9,47 +9,64 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
+use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 
 /**
- *
  * @Rest\Route("/uz-api")
- *
  */
 class UZCommonController extends Controller
 {
     /**
      * @Route("/stations/{term}")
      * @Method("GET")
+     * @ApiDoc(
+     *  description="Get info about trains ",
+     * )
      */
     public function getStationsByTerm(string $term): JsonResponse
     {
         $uzservice = $this->container->get('bek_uz.uzservice');
         $data = $uzservice->getStationsByTerm($term);
-        return new JsonResponse(['data' => $data]);
+
+        return new JsonResponse(['data' => $data],200,['Content-Type' => 'application/json']);
     }
 
     /**
      * @Route("/trains_info/")
      * @Method("GET")
-     * // http://symf-base.local.dev/uz-api/trains_info/?station_to=kyiv&station_from=kharkiv&station_id_from=2204001&station_id_till=2200001&date_dep=01.02.2018
+     *
+     * @ApiDoc(
+     *  description="Get info about trains ",
+     *  parameters={
+     *      {"name"="stationFromId", "dataType"="integer", "required"=true, "description"="station From Id"},
+     *      {"name"="stationTillId", "dataType"="integer", "required"=true, "description"="station Till Id"},
+     *      {"name"="stationFrom", "dataType"="string", "required"=true, "description"="station from"},
+     *      {"name"="stationTill", "dataType"="string", "required"=true, "description"="station till"}
+     *  }
+     * )
      */
     public function getTrainsInfo(Request $req): JsonResponse
     {
-
         $paramsString = $req->getQueryString();
         parse_str($paramsString, $params);
         $uzservice = $this->container->get('bek_uz.uzservice');
         $data = $uzservice->getTrainsInfo($params);
-
-//        var_dump($params);
-
         return new JsonResponse(['data' => $data]);
     }
 
     /**
      * @Route("/search_request/")
      * @Method("POST")
+     *
+     * @ApiDoc(
+     *  description="Create a new Object",
+     *  parameters={
+     *      {"name"="stationFromId", "dataType"="integer", "required"=true, "description"="station From Id"},
+     *      {"name"="stationTillId", "dataType"="integer", "required"=true, "description"="station Till Id"},
+     *      {"name"="stationFrom", "dataType"="string", "required"=true, "description"="station from"},
+     *      {"name"="stationTill", "dataType"="string", "required"=true, "description"="station till"}
+     *  }
+     * )
      */
     public function addSearchRequest(Request $request): JsonResponse
     {
@@ -64,16 +81,24 @@ class UZCommonController extends Controller
         $em->flush();
         if ($sRequest->getId()) {
             $message = ['message' => 'created successfully', 'data' => ['id' => $sRequest->getId()]];
-
             return new JsonResponse($message, 201);
         }
-
         return new JsonResponse(['message' => 'Bad request'], 400);
     }
 
     /**
      * @Route("/search_request/{id}")
      * @Method("PUT")
+     *
+     * @ApiDoc(
+     *  description="Create a new Object",
+     *  parameters={
+     *      {"name"="stationFromId", "dataType"="integer", "required"=true, "description"="station From Id"},
+     *      {"name"="stationTillId", "dataType"="integer", "required"=true, "description"="station Till Id"},
+     *      {"name"="stationFrom", "dataType"="string", "required"=true, "description"="station from"},
+     *      {"name"="stationTill", "dataType"="string", "required"=true, "description"="station till"}
+     *  }
+     * )
      */
     public function updateSearchRequest(Request $request, $id)
     {
@@ -103,10 +128,13 @@ class UZCommonController extends Controller
     /**
      * @Route("/search_requests/")
      * @Method("GET")
+     *
+     * @ApiDoc(
+     *  description="Get all search requests"
+     * )
      */
     public function getSearchRequests()
     {
-
         $sRequests = $this->getDoctrine()
             ->getRepository('BekUZBundle:UZSearchRequest')
             ->findAllSRRequests();
@@ -114,16 +142,18 @@ class UZCommonController extends Controller
             return new JsonResponse(['data' => $sRequests]);
         }
         return new JsonResponse(['message' => 'there is no entities with provided id!', 'data' => []], 404);
-
     }
 
     /**
      * @Route("/search_request/{id}")
      * @Method("GET")
+     *
+     * @ApiDoc(
+     *  description="Get all search requests"
+     * )
      */
     public function getSearchRequest($id)
     {
-
         $sRequest = $this->getDoctrine()
             ->getRepository('BekUZBundle:UZSearchRequest')
             ->findSRequest($id);
@@ -131,16 +161,21 @@ class UZCommonController extends Controller
             return new JsonResponse(['data' => $sRequest]);
         }
         return new JsonResponse(['message' => 'there is no entities with provided id!', 'data' => []], 404);
-
     }
 
     /**
      * @Route("/search_request/{id}")
      * @Method("DELETE")
+     *
+     * @ApiDoc(
+     *  description="Get all search requests",
+     *  parameters={
+     *       {"name"="Id", "dataType"="integer", "required"=true, "description"="Id os search request to delete"},
+     *  }
+     * )
      */
     public function deleteSRequest($id)
     {
-        $message = ['message' => 'Fail'];
         $em = $this->getDoctrine()->getManager();
         $sRequest = $this->getDoctrine()
             ->getRepository('BekUZBundle:UZSearchRequest')->find($id);
@@ -150,8 +185,6 @@ class UZCommonController extends Controller
             return new JsonResponse(['message' => 'Deleted!']);
         }
         return new JsonResponse(['message' => 'Fail'], 404);
-
-
     }
 
 }
